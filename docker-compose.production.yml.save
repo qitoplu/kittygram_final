@@ -1,0 +1,39 @@
+version: '3'
+
+volumes:
+  kitty_pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13
+    env_file: .env
+    volumes:
+      - kitty_pg_data:/var/lib/postgresql/data
+  backend:
+    image: qitoplu/kittygram_backend
+    container_name: kittygram_backend
+    env_file: .env
+    volumes:
+      - static:/backend_static
+      - media:/app/media
+  frontend:
+    env_file: .env
+    image: qitoplu/kittygram_frontend
+    container_name: kittygram_frontend
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
+  gateway:
+    image: qitoplu/kittygram_gateway
+    container_name: kittygram_gateway
+    env_file: .env
+    volumes:
+      - static:/staticfiles
+      - media:/media
+    ports:
+      - 9000:80
+    depends_on:
+      - backend
+    restart: always
